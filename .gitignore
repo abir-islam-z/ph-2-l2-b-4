@@ -1,0 +1,16 @@
+node_modules
+dist
+
+# env
+.env
+
+
+# vercel
+.vercel
+.vercelignore
+vercel.json
+
+
+# package manager
+package-lock.json
+yarn.lock
