@@ -11,12 +11,11 @@ app.use(cors());
 app.use('/api/cars', CarRoutes);
 app.use('/api/orders', OrderRoutes);
 
-// global error handler
-app.use((err: any, req: Request, res: Response) => {
-  res.status(400).json({
-    success: false,
-    message: 'Something Went Wrong!',
-    error: err.message,
+// Health Check
+app.get('/', (req: Request, res: Response) => {
+  res.status(200).json({
+    success: true,
+    message: 'Server is Healthy',
   });
 });
 
