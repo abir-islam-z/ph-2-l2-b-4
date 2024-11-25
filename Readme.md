@@ -88,6 +88,8 @@ Create a `.env` file using the provided `.env.example`. Update variables with yo
 
 ## API Endpoints
 
+Live API: [Link](https://ph-level2-assignment-2-one.vercel.app/)
+
 - `/api/v1/cars`
   - `POST` : Create a new car.
   - `GET` : Get all cars . (optionally: searchTerm can be passed to search cars by category, brand, model)
