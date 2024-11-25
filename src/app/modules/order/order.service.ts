@@ -5,25 +5,22 @@ import { OrderModel } from './order.model';
 const createOrderIntoDB = async (orderData: IOrder) => {
   const car = await CarModel.findById(orderData.car);
 
-  if (!car) {
-    throw new Error('Car not found');
-  }
+  // error handling
+  if (!car) throw new Error('Car not found');
+  if (car.quantity < orderData.quantity) throw new Error('Not enough stock');
 
-  if (car.quantity === 0 || car.quantity < orderData.quantity) {
-    throw new Error('Not enough quantity');
-  }
-
-  if (orderData.quantity < 1) {
-    throw new Error('Quantity must be a positive number');
-  }
-
-  car.quantity =
-    car.quantity > 0 ? car.quantity - orderData.quantity : car.quantity;
+  car.quantity -= orderData.quantity;
   car.inStock = car.quantity > 0;
-
+  await car.save();
+  car.inStock = car.quantity > 0;
   await car.save();
 
-  const order = await OrderModel.create(orderData);
+  const newOrderData = {
+    ...orderData,
+    totalPrice: car.price * orderData.quantity,
+  };
+
+  const order = await OrderModel.create(newOrderData);
   return order;
 };
 

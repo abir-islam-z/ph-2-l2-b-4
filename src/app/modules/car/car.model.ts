@@ -1,25 +1,25 @@
 import { model, Schema } from 'mongoose';
-import { ICar } from './car.interface';
+import { ICar, ICarModel } from './car.interface';
 
-const CarSchema = new Schema<ICar>(
+const CarSchema = new Schema<ICar, ICarModel>(
   {
     brand: { type: String, required: true, trim: true, minlength: 3 },
     model: {
       type: String,
-      required: true,
       trim: true,
-      minlength: 3,
+      required: [true, 'Car Model is required'],
+      minlength: [3, 'Car Model must be at least 3 characters long'],
     },
     year: {
       type: Number,
-      required: true,
-      min: 1900,
-      max: new Date().getFullYear(),
+      required: [true, 'Year is required'],
+      min: [1900, 'Year cannot be less than 1900'],
+      max: [new Date().getFullYear(), 'Year cannot be in the future'],
     },
     price: {
       type: Number,
-      required: true,
-      min: 1,
+      required: [true, 'Price is required'],
+      min: [1, 'Price should be a positive number'],
     },
     category: {
       type: String,
@@ -34,17 +34,20 @@ const CarSchema = new Schema<ICar>(
       required: true,
       validate: {
         validator: (v: string) => v.length > 10,
-        message: 'Description must be at least 10 characters long',
+        message: 'Description should be at least 10 characters long',
       },
     },
     quantity: {
       type: Number,
-      required: true,
-      min: 1,
+      required: [true, 'Quantity is required'],
     },
     inStock: { type: Boolean, default: true },
   },
   { timestamps: true },
 );
 
-export const CarModel = model<ICar>('Car', CarSchema);
+CarSchema.statics.isExist = async function (id: string) {
+  return this.findById(id);
+};
+
+export const CarModel = model<ICar, ICarModel>('Car', CarSchema);

@@ -19,7 +19,7 @@ const orderCar = async (req: Request, res: Response) => {
       message: 'Order creation failed',
       success: false,
       error,
-      stack: `Error: ${'Order creation failed'}\n at ${error.stack}`,
+      stack: error.stack,
     });
   }
 };
@@ -33,7 +33,12 @@ const calculateRevenue = async (req: Request, res: Response) => {
       data: revenue,
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message, success: false });
+    res.status(500).json({
+      message: error.message,
+      success: false,
+      error,
+      stack: error.stack,
+    });
   }
 };
 

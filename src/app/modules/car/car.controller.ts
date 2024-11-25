@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Request, Response } from 'express';
 import { z } from 'zod';
 import { ICar } from './car.interface';
@@ -17,7 +18,7 @@ const createCar = async (req: Request, res: Response) => {
       message: 'Car creation failed',
       success: false,
       error,
-      stack: `Error: ${'Car creation failed'}\n at ${error.stack}`,
+      stack: error.stack,
     });
   }
 };
@@ -32,7 +33,12 @@ const getCars = async (req: Request, res: Response) => {
       data: cars,
     });
   } catch (error: any) {
-    res.status(500).json({ message: error.message, success: false, error });
+    res.status(500).json({
+      message: 'Cars retrieval failed',
+      success: false,
+      error,
+      stack: error.stack,
+    });
   }
 };
 
@@ -48,7 +54,7 @@ const getCarById = async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     res.status(500).json({
-      message: "Couldn't Retrieve Car",
+      message: 'Car retrieval failed',
       success: false,
       error,
       stack: error.stack,
@@ -59,9 +65,11 @@ const getCarById = async (req: Request, res: Response) => {
 const updateCar = async (req: Request, res: Response) => {
   try {
     const carId: string = req.params.carId;
-    const carData: ICar = req.body;
+    const carData: Partial<ICar> = req.body;
 
-    const validatedData = await carValidationSchema.parseAsync(carData);
+    const validatedData = await carValidationSchema
+      .partial()
+      .parseAsync(carData);
     const validatedCarId = await z.string().parseAsync(carId);
 
     const car = await CarService.updateCarByIdInDB(
@@ -72,7 +80,7 @@ const updateCar = async (req: Request, res: Response) => {
     res.json({ message: 'Car updated successfully', status: true, data: car });
   } catch (error: any) {
     res.status(500).json({
-      message: "Couldn't Update Car",
+      message: 'Car update failed',
       success: false,
       error,
       stack: error.stack,
@@ -87,7 +95,7 @@ const deleteCar = async (req: Request, res: Response) => {
     res.json({ message: 'Car deleted successfully', status: true, data: {} });
   } catch (error: any) {
     res.status(500).json({
-      message: "Car couldn't be deleted",
+      message: 'Car deletion failed',
       success: false,
       error,
       stack: error.stack,

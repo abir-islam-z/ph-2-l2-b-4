@@ -9,6 +9,8 @@ quantity (number): Quantity of the car available.
 inStock (boolean): Indicates if the car is in stock.
 */
 
+import { Model } from 'mongoose';
+
 export interface ICar {
   brand: string;
   model: string;
@@ -20,4 +22,9 @@ export interface ICar {
   inStock: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+}
+
+export interface ICarModel extends Model<ICar> {
+  // eslint-disable-next-line no-unused-vars
+  isExist: (id: string) => Promise<ICar | null>;
 }

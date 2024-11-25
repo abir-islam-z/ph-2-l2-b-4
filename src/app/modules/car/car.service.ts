@@ -1,6 +1,5 @@
 import { ICar } from '../car/car.interface';
 import { CarModel } from '../car/car.model';
-// services
 
 const createCarIntoDB = async (carData: ICar) => {
   const result = await CarModel.create(carData);
@@ -8,18 +7,16 @@ const createCarIntoDB = async (carData: ICar) => {
 };
 
 const getAllCarsFromDB = async (searchTerm?: string) => {
-  let result;
-  if (searchTerm) {
-    result = await CarModel.find({
-      $or: [
-        { brand: searchTerm ?? '' },
-        { model: searchTerm ?? '' },
-        { category: searchTerm ?? '' },
-      ],
-    });
-  } else {
-    result = await CarModel.find();
-  }
+  const query = searchTerm
+    ? {
+        $or: [
+          { brand: searchTerm ?? '' },
+          { model: searchTerm ?? '' },
+          { category: searchTerm ?? '' },
+        ],
+      }
+    : {};
+  const result = await CarModel.find(query);
   return result;
 };
 
@@ -28,10 +25,18 @@ const getCarByIdFromDB = async (carId: string) => {
   return result;
 };
 
-const updateCarByIdInDB = async (carId: string, carData: ICar) => {
-  const result = await CarModel.findByIdAndUpdate(carId, carData, {
-    new: true,
-  });
+const updateCarByIdInDB = async (carId: string, carData: Partial<ICar>) => {
+  const inStock = carData?.quantity && carData?.quantity > 0;
+  const result = await CarModel.findByIdAndUpdate(
+    carId,
+    {
+      ...carData,
+      inStock,
+    },
+    {
+      new: true,
+    },
+  );
   return result;
 };
 
