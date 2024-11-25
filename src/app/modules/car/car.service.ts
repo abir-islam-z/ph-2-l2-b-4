@@ -22,6 +22,11 @@ const getAllCarsFromDB = async (searchTerm?: string) => {
 
 const getCarByIdFromDB = async (carId: string) => {
   const result = await CarModel.findById(carId);
+
+  if (!result) {
+    throw new Error('Car not found');
+  }
+
   return result;
 };
 

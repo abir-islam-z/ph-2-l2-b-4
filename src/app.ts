@@ -25,10 +25,7 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
   res.status(500).json({
     success: false,
     message: err.message,
-    error: {
-      name: err.name,
-      ...(err.errors && { errors: err.errors }),
-    },
+    error: err,
     stack: err.stack,
   });
 });

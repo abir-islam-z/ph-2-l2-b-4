@@ -1,30 +1,36 @@
-import { Request, Response } from 'express';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { NextFunction, Request, Response } from 'express';
 import { IOrder } from './order.interface';
 import { OrderService } from './order.service';
 import orderValidationSchema from './order.validation';
 
-const orderCar = async (req: Request, res: Response) => {
+const orderCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const orderData: IOrder = req.body;
 
-    const validatedData = await orderValidationSchema.parseAsync(orderData);
-    const order = await OrderService.createOrderIntoDB(validatedData);
+    const validatedDataResult =
+      await orderValidationSchema.safeParseAsync(orderData);
+
+    if (!validatedDataResult.success) throw validatedDataResult.error;
+
+    const order = await OrderService.createOrderIntoDB(
+      validatedDataResult.data,
+    );
     res.status(201).json({
       message: 'Order created successfully',
       status: true,
       data: order,
     });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Order creation failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 
-const calculateRevenue = async (req: Request, res: Response) => {
+const calculateRevenue = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   try {
     const revenue = await OrderService.calculateRevenueFromOrders();
     res.json({
@@ -33,12 +39,7 @@ const calculateRevenue = async (req: Request, res: Response) => {
       data: revenue,
     });
   } catch (error: any) {
-    res.status(500).json({
-      message: error.message,
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 

@@ -4,14 +4,13 @@ import { z } from 'zod';
 import { ICar } from './car.interface';
 import { CarService } from './car.service';
 import carValidationSchema from './car.validation';
-import handleZodError from '../../errors/handleZodError';
 
 const createCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carData: ICar = req.body;
     const result = await carValidationSchema.safeParseAsync(carData);
 
-    if (!result?.success) throw handleZodError(result.error);
+    if (!result?.success) throw result.error;
 
     const car = await CarService.createCarIntoDB(result.data);
     res
@@ -39,6 +38,9 @@ const getCars = async (req: Request, res: Response, next: NextFunction) => {
 const getCarById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carId: string = req.params.carId;
+    const validatedCarIdResult = await z.string().safeParseAsync(carId);
+
+    if (!validatedCarIdResult.success) throw validatedCarIdResult.error;
     const car = await CarService.getCarByIdFromDB(carId);
 
     res.json({
