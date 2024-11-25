@@ -1,29 +1,28 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { ICar } from './car.interface';
 import { CarService } from './car.service';
 import carValidationSchema from './car.validation';
+import handleZodError from '../../errors/handleZodError';
 
-const createCar = async (req: Request, res: Response) => {
+const createCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carData: ICar = req.body;
-    const validatedData = await carValidationSchema.parseAsync(carData);
-    const car = await CarService.createCarIntoDB(validatedData);
+    const result = await carValidationSchema.safeParseAsync(carData);
+
+    if (!result?.success) throw handleZodError(result.error);
+
+    const car = await CarService.createCarIntoDB(result.data);
     res
       .status(201)
       .json({ message: 'Car created successfully', success: true, data: car });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Car creation failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 
-const getCars = async (req: Request, res: Response) => {
+const getCars = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const searchTerm: string = req.query.searchTerm as string;
     const cars = await CarService.getAllCarsFromDB(searchTerm);
@@ -33,16 +32,11 @@ const getCars = async (req: Request, res: Response) => {
       data: cars,
     });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Cars retrieval failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 
-const getCarById = async (req: Request, res: Response) => {
+const getCarById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carId: string = req.params.carId;
     const car = await CarService.getCarByIdFromDB(carId);
@@ -53,53 +47,43 @@ const getCarById = async (req: Request, res: Response) => {
       data: car,
     });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Car retrieval failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 
-const updateCar = async (req: Request, res: Response) => {
+const updateCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carId: string = req.params.carId;
     const carData: Partial<ICar> = req.body;
 
-    const validatedData = await carValidationSchema
+    const validatedCarIdResult = await z.string().safeParseAsync(carId);
+    const validatedCarDataResult = await carValidationSchema
       .partial()
-      .parseAsync(carData);
-    const validatedCarId = await z.string().parseAsync(carId);
+      .safeParseAsync(carData);
+
+    if (!validatedCarIdResult.success) throw validatedCarIdResult.error;
+    if (!validatedCarDataResult.success) throw validatedCarDataResult.error;
 
     const car = await CarService.updateCarByIdInDB(
-      validatedCarId,
-      validatedData,
+      validatedCarIdResult.data,
+      validatedCarDataResult.data,
     );
 
     res.json({ message: 'Car updated successfully', status: true, data: car });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Car update failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 
-const deleteCar = async (req: Request, res: Response) => {
+const deleteCar = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const carId: string = req.params.carId;
-    await CarService.deleteCarByIdFromDB(carId);
+    const validatedCarIdResult = await z.string().safeParseAsync(carId);
+    if (!validatedCarIdResult.success) throw validatedCarIdResult.error;
+    await CarService.deleteCarByIdFromDB(validatedCarIdResult.data);
     res.json({ message: 'Car deleted successfully', status: true, data: {} });
   } catch (error: any) {
-    res.status(500).json({
-      message: 'Car deletion failed',
-      success: false,
-      error,
-      stack: error.stack,
-    });
+    next(error);
   }
 };
 

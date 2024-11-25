@@ -41,7 +41,7 @@ const updateCarByIdInDB = async (carId: string, carData: Partial<ICar>) => {
 };
 
 const deleteCarByIdFromDB = async (carId: string) => {
-  await CarModel.findByIdAndDelete(carId);
+  await CarModel.findByIdAndUpdate(carId, { inStock: false, quantity: 0 });
 };
 
 export const CarService = {

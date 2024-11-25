@@ -50,4 +50,19 @@ CarSchema.statics.isExist = async function (id: string) {
   return this.findById(id);
 };
 
+/* CarSchema.pre('find', function (next) {
+  this.find({ inStock: true, quantity: { $gt: 0 } });
+  next();
+});
+
+CarSchema.pre('findOne', function (next) {
+  this.findOne({ inStock: true, quantity: { $gt: 0 } });
+  next();
+});
+
+CarSchema.pre('aggregate', function (next) {
+  this.pipeline().unshift({ $match: { inStock: true, quantity: { $gt: 0 } } });
+  next();
+}); */
+
 export const CarModel = model<ICar, ICarModel>('Car', CarSchema);
