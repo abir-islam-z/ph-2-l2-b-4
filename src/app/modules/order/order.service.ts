@@ -9,10 +9,10 @@ const createOrderIntoDB = async (orderData: IOrder) => {
   if (!car) throw new Error('Car not found');
   if (car.quantity < orderData.quantity) throw new Error('Not enough stock');
 
-  car.quantity -= orderData.quantity;
+  car.quantity -= orderData.quantity; // decrement the quantity
   car.inStock = car.quantity > 0;
   await car.save();
-  car.inStock = car.quantity > 0;
+  car.inStock = car.quantity > 0; // set inStock to false if car.quantity == 0
   await car.save();
 
   const newOrderData = {
@@ -28,7 +28,7 @@ const calculateRevenueFromOrders = async () => {
   const result = await OrderModel.aggregate([
     // stage 1
     {
-      $group: { _id: '$totalPrice', totalRevenue: { $sum: '$totalPrice' } },
+      $group: { _id: '', totalRevenue: { $sum: '$totalPrice' } },
     },
 
     // stage 2
